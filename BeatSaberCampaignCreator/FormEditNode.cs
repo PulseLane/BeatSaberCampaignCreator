@@ -1,4 +1,4 @@
-﻿using BeatSaberCustomCampaigns.campaign;
+﻿using CustomCampaigns.Campaign;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +14,7 @@ namespace BeatSaberCampaignCreator
     public partial class FormEditNode : Form
     {
         const int CENTER_OFFSET = 121;
-        public CampainMapPosition mapPosition;
+        public CampaignMapPosition mapPosition;
         public NodeButton nodeButton;
         public FormEditNode(NodeButton nodeButton)
         {

@@ -1,5 +1,6 @@
-﻿using BeatSaberCustomCampaigns;
-using BeatSaberCustomCampaigns.campaign;
+﻿using CustomCampaigns;
+using CustomCampaigns.Campaign;
+using CustomCampaigns.Campaign.Missions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static BeatSaberCustomCampaigns.ChallengeInfo;
+using static CustomCampaigns.Campaign.Missions.UnlockableItem;
 
 namespace BeatSaberCampaignCreator
 {
@@ -22,7 +23,7 @@ namespace BeatSaberCampaignCreator
         Campaign campaign = null;
         Bitmap backgroundBitmap = null;
         string currentDirectory;
-        int currentChallenge = 0;
+        int currentMission = 0;
         bool isLoading = false;
         public Form1()
         {
@@ -31,51 +32,51 @@ namespace BeatSaberCampaignCreator
 
         private void button1_Click(object sender, EventArgs e)
         {
-            AddChallenge();
+            AddMission();
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox1.SelectedIndex >= campaign.challenges.Count() || campaign.challenges.Count() < 0) return;
-            currentChallenge = listBox1.SelectedIndex;
+            if (listBox1.SelectedIndex >= campaign.missions.Count() || campaign.missions.Count() < 0) return;
+            currentMission = listBox1.SelectedIndex;
             SetDataToCurrentSelected();
         }
-        private void AddChallenge()
+        private void AddMission()
         {
             listBox1.Items.Add(listBox1.Items.Count);
-            Challenge challenge = new Challenge();
-            challenge.modifiers = new ChallengeModifiers();
-            challenge.modifiers.speedMul = 1;
-            challenge.requirements = new ChallengeRequirement[0];
-            campaign.challenges.Add(challenge);
+            Mission mission = new Mission();
+            mission.modifiers = new MissionModifiers();
+            mission.modifiers.speedMul = 1;
+            mission.requirements = new MissionRequirement[0];
+            campaign.missions.Add(mission);
         }
         public void SetDataToCurrentSelected()
         {
             if (campaign == null) return;
             isLoading = true;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challengeName.Text = challenge.name;
-            beatmapCharacteristic.Text = challenge.characteristic;
-            songID.Text = challenge.songid;
-            customDownloadURL.Text = challenge.customDownloadURL;
-            difficulty.SelectedIndex = (int)challenge.difficulty;
-            disappearingArrows.Checked = challenge.modifiers.disappearingArrows;
-            strictAngles.Checked = challenge.modifiers.strictAngles;
-            fastNotes.Checked = challenge.modifiers.fastNotes;
-            noBombs.Checked = challenge.modifiers.noBombs;
-            failOnSaberClash.Checked = challenge.modifiers.failOnSaberClash;
-            instaFail.Checked = challenge.modifiers.instaFail;
-            noFail.Checked = challenge.modifiers.noFail;
-            batteryEnergy.Checked = challenge.modifiers.batteryEnergy;
-            ghostNotes.Checked = challenge.modifiers.ghostNotes;
-            noArrows.Checked = challenge.modifiers.noArrows;
-            speedMul.Value = (decimal)challenge.modifiers.speedMul;
-            energyType.SelectedIndex = (int)challenge.modifiers.energyType;
-            enabledObstacles.SelectedIndex = (int)challenge.modifiers.enabledObstacleType;
-            songUnlockable.Checked = challenge.unlockMap;
+            Mission mission = campaign.missions[currentMission];
+            missionName.Text = mission.name;
+            beatmapCharacteristic.Text = mission.characteristic;
+            songID.Text = mission.songid;
+            customDownloadURL.Text = mission.customDownloadURL;
+            difficulty.SelectedIndex = (int) mission.difficulty;
+            disappearingArrows.Checked = mission.modifiers.disappearingArrows;
+            strictAngles.Checked = mission.modifiers.strictAngles;
+            fastNotes.Checked = mission.modifiers.fastNotes;
+            noBombs.Checked = mission.modifiers.noBombs;
+            failOnSaberClash.Checked = mission.modifiers.failOnSaberClash;
+            instaFail.Checked = mission.modifiers.instaFail;
+            noFail.Checked = mission.modifiers.noFail;
+            batteryEnergy.Checked = mission.modifiers.batteryEnergy;
+            ghostNotes.Checked = mission.modifiers.ghostNotes;
+            noArrows.Checked = mission.modifiers.noArrows;
+            speedMul.Value = (decimal) mission.modifiers.speedMul;
+            energyType.SelectedIndex = (int) mission.modifiers.energyType;
+            enabledObstacles.SelectedIndex = (int) mission.modifiers.enabledObstacleType;
+            songUnlockable.Checked = mission.unlockMap;
 
             reqList.Items.Clear();
-            foreach(ChallengeRequirement req in challenge.requirements)
+            foreach(MissionRequirement req in mission.requirements)
             {
                 reqList.Items.Add(reqList.Items.Count);
             }
@@ -84,14 +85,14 @@ namespace BeatSaberCampaignCreator
             UpdateRequirementToggleState();
 
             externalModsList.Items.Clear();
-            foreach(KeyValuePair<string, string[]> pair in challenge.externalModifiers)
+            foreach(KeyValuePair<string, string[]> pair in mission.externalModifiers)
             {
                 externalModsList.Items.Add(pair.Key);
             }
             if (externalModsList.Items.Count > 0) externalModsList.SelectedIndex = 0;
 
             unlockableListBox.Items.Clear();
-            foreach (UnlockableItem req in challenge.unlockableItems)
+            foreach (UnlockableItem req in mission.unlockableItems)
             {
                 unlockableListBox.Items.Add(unlockableListBox.Items.Count);
             }
@@ -100,15 +101,15 @@ namespace BeatSaberCampaignCreator
             UpdateUnlockableToggleState();
 
             segments.Items.Clear();
-            if (challenge.challengeInfo != null)
+            if (mission.missionInfo != null)
             {
-                foreach (InfoSegment segment in challenge.challengeInfo.segments)
+                foreach (InfoSegment segment in mission.missionInfo.segments)
                 {
                     segments.Items.Add(segments.Items.Count);
                 }
                 if (segments.Items.Count > 0) segments.SelectedIndex = 0;
             }
-            infoEnabled.Checked = challenge.challengeInfo != null;
+            infoEnabled.Checked = mission.missionInfo != null;
             SetInfoToSelected();
             SetSegmentToSelected();
             UpdateInfoToggleState();
@@ -119,39 +120,39 @@ namespace BeatSaberCampaignCreator
             isLoading = false;
             
         }
-        private void ChallengeDataValueChange(object sender, EventArgs e)
+        private void MissionDataValueChange(object sender, EventArgs e)
         {
             if (isLoading) return;
-            UpdateChallengeInfo();
+            UpdateMissionInfo();
         }
         private void CampaignDataValueChange(object sender, EventArgs e)
         {
             if (updatingCampaign) return;
             UpdateCampaignInfo();
         }
-        public void UpdateChallengeInfo()
+        public void UpdateMissionInfo()
         {
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.name = challengeName.Text;
-            challenge.characteristic = beatmapCharacteristic.Text;
-            challenge.songid = songID.Text;
-            challenge.customDownloadURL = customDownloadURL.Text;
-            challenge.difficulty = (BeatmapDifficulty)difficulty.SelectedIndex;
-            challenge.modifiers.disappearingArrows = disappearingArrows.Checked;
-            challenge.modifiers.strictAngles = strictAngles.Checked;
-            challenge.modifiers.fastNotes = fastNotes.Checked;
-            challenge.modifiers.noBombs = noBombs.Checked;
-            challenge.modifiers.failOnSaberClash = failOnSaberClash.Checked;
-            challenge.modifiers.instaFail = instaFail.Checked;
-            challenge.modifiers.noFail = noFail.Checked;
-            challenge.modifiers.batteryEnergy = batteryEnergy.Checked;
-            challenge.modifiers.ghostNotes = ghostNotes.Checked;
-            challenge.modifiers.noArrows = noArrows.Checked;
-            challenge.modifiers.speedMul = (float)speedMul.Value;
-            challenge.modifiers.energyType = (GameplayModifiers.EnergyType)energyType.SelectedIndex;
-            challenge.modifiers.enabledObstacleType = (GameplayModifiers.EnabledObstacleType)enabledObstacles.SelectedIndex;
-            challenge.unlockMap = songUnlockable.Checked;
+            Mission mission = campaign.missions[currentMission];
+            mission.name = missionName.Text;
+            mission.characteristic = beatmapCharacteristic.Text;
+            mission.songid = songID.Text;
+            mission.customDownloadURL = customDownloadURL.Text;
+            mission.difficulty = (BeatmapDifficulty)difficulty.SelectedIndex;
+            mission.modifiers.disappearingArrows = disappearingArrows.Checked;
+            mission.modifiers.strictAngles = strictAngles.Checked;
+            mission.modifiers.fastNotes = fastNotes.Checked;
+            mission.modifiers.noBombs = noBombs.Checked;
+            mission.modifiers.failOnSaberClash = failOnSaberClash.Checked;
+            mission.modifiers.instaFail = instaFail.Checked;
+            mission.modifiers.noFail = noFail.Checked;
+            mission.modifiers.batteryEnergy = batteryEnergy.Checked;
+            mission.modifiers.ghostNotes = ghostNotes.Checked;
+            mission.modifiers.noArrows = noArrows.Checked;
+            mission.modifiers.speedMul = (float)speedMul.Value;
+            mission.modifiers.energyType = (GameplayModifiers.EnergyType)energyType.SelectedIndex;
+            mission.modifiers.enabledObstacleType = (GameplayModifiers.EnabledObstacleType)enabledObstacles.SelectedIndex;
+            mission.unlockMap = songUnlockable.Checked;
         }
         bool updatingCampaign = false;
         public void SetCampaignInfoData()
@@ -184,10 +185,10 @@ namespace BeatSaberCampaignCreator
                 currentDirectory = path;
                 campaign = new Campaign();
                 campaign.info = new CampaignInfo();
-                campaign.challenges = new List<Challenge>();
+                campaign.missions = new List<Mission>();
                 listBox1.Items.Clear();
-                AddChallenge();
-                currentChallenge = 0;
+                AddMission();
+                currentMission = 0;
                 tabControl1.Enabled = true;
                 SetCampaignInfoData();
                 SetDataToCurrentSelected();
@@ -204,13 +205,13 @@ namespace BeatSaberCampaignCreator
                 currentDirectory = path;
                 campaign = new Campaign();
                 campaign.info = JsonConvert.DeserializeObject<CampaignInfo>(File.ReadAllText(path + "/info.json"));
-                campaign.challenges = new List<Challenge>();
-                currentChallenge = 0;
+                campaign.missions = new List<Mission>();
+                currentMission = 0;
                 int i = 0;
                 listBox1.Items.Clear();
                 while (File.Exists(path + "/" + i + ".json"))
                 {
-                    campaign.challenges.Add(JsonConvert.DeserializeObject<Challenge>(File.ReadAllText(path + "/" + i + ".json").Replace("\n", "")));
+                    campaign.missions.Add(JsonConvert.DeserializeObject<Mission>(File.ReadAllText(path + "/" + i + ".json").Replace("\n", "")));
                     listBox1.Items.Add(listBox1.Items.Count);
                     i++;
                 }
@@ -233,9 +234,9 @@ namespace BeatSaberCampaignCreator
         {
             if (campaign == null) return;
             File.WriteAllText(currentDirectory + "/info.json", JsonConvert.SerializeObject(campaign.info));
-            for(int i = 0; i < campaign.challenges.Count; i++)
+            for(int i = 0; i < campaign.missions.Count; i++)
             {
-                File.WriteAllText(currentDirectory + "/" + i + ".json", JsonConvert.SerializeObject(campaign.challenges[i]));
+                File.WriteAllText(currentDirectory + "/" + i + ".json", JsonConvert.SerializeObject(campaign.missions[i]));
             }
         }
 
@@ -245,29 +246,29 @@ namespace BeatSaberCampaignCreator
         private void addReq_Click(object sender, EventArgs e)
         {
             reqList.Items.Add(reqList.Items.Count);
-            Challenge challenge = campaign.challenges[currentChallenge];
-            List<ChallengeRequirement> tempList = new List<ChallengeRequirement>();
-            foreach(ChallengeRequirement req in challenge.requirements)
+            Mission mission = campaign.missions[currentMission];
+            List<MissionRequirement> tempList = new List<MissionRequirement>();
+            foreach(MissionRequirement req in mission.requirements)
             {
                 tempList.Add(req);
             }
-            tempList.Add(new ChallengeRequirement());
-            challenge.requirements = tempList.ToArray();
+            tempList.Add(new MissionRequirement());
+            mission.requirements = tempList.ToArray();
             UpdateRequirementToggleState();
         }
 
         private void remReq_Click(object sender, EventArgs e)
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            List<ChallengeRequirement> tempList = new List<ChallengeRequirement>();
-            foreach (ChallengeRequirement req in challenge.requirements)
+            Mission mission = campaign.missions[currentMission];
+            List<MissionRequirement> tempList = new List<MissionRequirement>();
+            foreach (MissionRequirement req in mission.requirements)
             {
                 tempList.Add(req);
             }
             tempList.RemoveAt(curRequirementIndex);
-            challenge.requirements = tempList.ToArray();
+            mission.requirements = tempList.ToArray();
             reqList.Items.Clear();
-            foreach (ChallengeRequirement req in challenge.requirements)
+            foreach (MissionRequirement req in mission.requirements)
             {
                 reqList.Items.Add(reqList.Items.Count);
             }
@@ -288,9 +289,9 @@ namespace BeatSaberCampaignCreator
         public void UpdateRequirementInfo()
         {
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.requirements.Count() == 0 || curRequirementIndex >= challenge.requirements.Count()) return;
-            ChallengeRequirement requirement = challenge.requirements[curRequirementIndex];
+            Mission mission = campaign.missions[currentMission];
+            if (mission.requirements.Count() == 0 || curRequirementIndex >= mission.requirements.Count()) return;
+            MissionRequirement requirement = mission.requirements[curRequirementIndex];
             requirement.type = requirementType.Text;
             requirement.count = (int)requirementValue.Value;
             requirement.isMax = requirementIsMax.Checked;
@@ -298,10 +299,10 @@ namespace BeatSaberCampaignCreator
         public void SetRequirementToSelected()
         {
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.requirements.Count() == 0 || curRequirementIndex >= challenge.requirements.Count()) return;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.requirements.Count() == 0 || curRequirementIndex >= mission.requirements.Count()) return;
             reqUpdating = true;
-            ChallengeRequirement requirement = challenge.requirements[curRequirementIndex];
+            MissionRequirement requirement = mission.requirements[curRequirementIndex];
             requirementType.Text = requirement.type;
             requirementValue.Value = requirement.count;
             requirementIsMax.Checked = requirement.isMax;
@@ -309,9 +310,9 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateRequirementToggleState()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
+            Mission mission = campaign.missions[currentMission];
 
-            bool isEnabled = !(challenge.requirements.Count() == 0 || curRequirementIndex >= challenge.requirements.Count());
+            bool isEnabled = !(mission.requirements.Count() == 0 || curRequirementIndex >= mission.requirements.Count());
             requirementType.Enabled = isEnabled;
             requirementValue.Enabled = isEnabled;
             requirementIsMax.Enabled = isEnabled;
@@ -321,19 +322,19 @@ namespace BeatSaberCampaignCreator
         //External Modifier stuff
         private void addExtMod_Click(object sender, EventArgs e)
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
+            Mission mission = campaign.missions[currentMission];
             string modName = ShowDialog("Mod Name (ex GameplayModifiersPlus)", "External Modifier Mod Name");
-            challenge.externalModifiers.Add(modName, new string[0]);
+            mission.externalModifiers.Add(modName, new string[0]);
             externalModsList.Items.Add(modName);
             externalModsList.SelectedIndex = externalModsList.Items.Count - 1;
         }
 
         private void remExtMod_Click(object sender, EventArgs e)
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.externalModifiers.Remove((string)externalModsList.SelectedItem);
+            Mission mission = campaign.missions[currentMission];
+            mission.externalModifiers.Remove((string)externalModsList.SelectedItem);
             externalModsList.Items.Clear();
-            foreach (KeyValuePair<string, string[]> pair in challenge.externalModifiers)
+            foreach (KeyValuePair<string, string[]> pair in mission.externalModifiers)
             {
                 externalModsList.Items.Add(pair.Key);
             }
@@ -343,10 +344,10 @@ namespace BeatSaberCampaignCreator
         private void externalModsList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
+            Mission mission = campaign.missions[currentMission];
             isExtLoading = true;
             textBox1.Text = "";
-            foreach (string line in challenge.externalModifiers[(string)externalModsList.SelectedItem])
+            foreach (string line in mission.externalModifiers[(string)externalModsList.SelectedItem])
             {
                 textBox1.Text += line + "\r\n";
             }
@@ -359,14 +360,14 @@ namespace BeatSaberCampaignCreator
         {
             if (isExtLoading) return;
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.externalModifiers.Remove((string)externalModsList.SelectedItem);
+            Mission mission = campaign.missions[currentMission];
+            mission.externalModifiers.Remove((string)externalModsList.SelectedItem);
             string[] lines = textBox1.Text.Split('\n');
             for(int i = 0; i < lines.Count(); i++)
             {
                 lines[i] = lines[i].Trim('\r');
             }
-            challenge.externalModifiers.Add((string)externalModsList.SelectedItem,lines);
+            mission.externalModifiers.Add((string)externalModsList.SelectedItem,lines);
         }
 
 
@@ -472,7 +473,7 @@ namespace BeatSaberCampaignCreator
             nodes.Clear();
             gates.Clear();
             UpdateMapHeight(campaign.info.mapHeight);
-            foreach (CampainMapPosition mapPos in campaign.info.mapPositions)
+            foreach (CampaignMapPosition mapPos in campaign.info.mapPositions)
             {
                 currentNode = new NodeButton();
                 mapArea.Controls.Add(currentNode);
@@ -507,9 +508,9 @@ namespace BeatSaberCampaignCreator
         private void addNode_Click(object sender, EventArgs e)
         {
             if (!CanSwitchState()) return;
-            if (campaign.info.mapPositions.Count >= campaign.challenges.Count)
+            if (campaign.info.mapPositions.Count >= campaign.missions.Count)
             {
-                ShowDialog("You cannot have more nodes than challenges, if you wish to add more ndoes, add the challenges for those ndoes first." , "Error");
+                ShowDialog("You cannot have more nodes than missions, if you wish to add more ndoes, add the missions for those ndoes first." , "Error");
                 return;
             }
             setState(MapState.ADD);
@@ -671,17 +672,17 @@ namespace BeatSaberCampaignCreator
         private void addUnlockable_Click(object sender, EventArgs e)
         {
             unlockableListBox.Items.Add(unlockableListBox.Items.Count);
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.unlockableItems.Add(new UnlockableItem());
+            Mission mission = campaign.missions[currentMission];
+            mission.unlockableItems.Add(new UnlockableItem());
             UpdateUnlockableToggleState();
         }
 
         private void removeUnlockable_Click(object sender, EventArgs e)
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.unlockableItems.RemoveAt(curUnlockableIndex);
+            Mission mission = campaign.missions[currentMission];
+            mission.unlockableItems.RemoveAt(curUnlockableIndex);
             unlockableListBox.Items.Clear();
-            foreach (UnlockableItem req in challenge.unlockableItems)
+            foreach (UnlockableItem req in mission.unlockableItems)
             {
                 unlockableListBox.Items.Add(unlockableListBox.Items.Count);
             }
@@ -701,9 +702,9 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateUnlockableInfo()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.unlockableItems.Count() == 0 || curUnlockableIndex >= challenge.unlockableItems.Count()) return;
-            UnlockableItem unlockable = challenge.unlockableItems[curUnlockableIndex];
+            Mission mission = campaign.missions[currentMission];
+            if (mission.unlockableItems.Count() == 0 || curUnlockableIndex >= mission.unlockableItems.Count()) return;
+            UnlockableItem unlockable = mission.unlockableItems[curUnlockableIndex];
             unlockable.fileName = unlockableFile.Text;
             unlockable.name = unlockableName.Text;
             unlockable.type = (UnlockableType)unlockableType.SelectedIndex;
@@ -711,10 +712,10 @@ namespace BeatSaberCampaignCreator
         public void SetUnlockableToSelected()
         {
             if (campaign == null) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.unlockableItems.Count() == 0 || curUnlockableIndex >= challenge.unlockableItems.Count()) return;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.unlockableItems.Count() == 0 || curUnlockableIndex >= mission.unlockableItems.Count()) return;
             unlockableUpdating = true;
-            UnlockableItem unlockable = challenge.unlockableItems[curUnlockableIndex];
+            UnlockableItem unlockable = mission.unlockableItems[curUnlockableIndex];
             unlockableFile.Text = unlockable.fileName;
             unlockableName.Text = unlockable.name;
             unlockableType.SelectedIndex = (int)unlockable.type;
@@ -722,32 +723,32 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateUnlockableToggleState()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            bool isEnabled = !(challenge.unlockableItems.Count() == 0 || curUnlockableIndex >= challenge.unlockableItems.Count());
+            Mission mission = campaign.missions[currentMission];
+            bool isEnabled = !(mission.unlockableItems.Count() == 0 || curUnlockableIndex >= mission.unlockableItems.Count());
             unlockableType.Enabled = isEnabled;
             unlockableFile.Enabled = isEnabled;
             unlockableName.Enabled = isEnabled;
         }
 
 
-        //Challenge Info
+        //Mission Info
         int curSegmentIndex;
         bool infoUpdating = false;
         bool segmentUpdating = false;
         private void addSegment_Click(object sender, EventArgs e)
         {
             segments.Items.Add(segments.Items.Count);
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.challengeInfo.segments.Add(new InfoSegment());
+            Mission mission = campaign.missions[currentMission];
+            mission.missionInfo.segments.Add(new InfoSegment());
             UpdateInfoToggleState();
         }
 
         private void removeSegment_Click(object sender, EventArgs e)
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            challenge.challengeInfo.segments.RemoveAt(curSegmentIndex);
+            Mission mission = campaign.missions[currentMission];
+            mission.missionInfo.segments.RemoveAt(curSegmentIndex);
             segments.Items.Clear();
-            foreach (InfoSegment req in challenge.challengeInfo.segments)
+            foreach (InfoSegment req in mission.missionInfo.segments)
             {
                 segments.Items.Add(segments.Items.Count);
             }
@@ -758,14 +759,14 @@ namespace BeatSaberCampaignCreator
         private void infoEnabled_CheckedChanged(object sender, EventArgs e)
         {
             if (isLoading) return;
-            Challenge challenge = campaign.challenges[currentChallenge];
+            Mission mission = campaign.missions[currentMission];
             if (infoEnabled.Checked)
             {
-                challenge.challengeInfo = new ChallengeInfo();
+                mission.missionInfo = new MissionInfo();
             }
             else
             {
-                challenge.challengeInfo = null;
+                mission.missionInfo = null;
             }
             SetInfoToSelected();
             SetSegmentToSelected();
@@ -780,18 +781,18 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateInfo()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.challengeInfo == null) return;
-            challenge.challengeInfo.showEverytime = appearsEverytime.Checked;
-            challenge.challengeInfo.title = infoTitle.Text;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.missionInfo == null) return;
+            mission.missionInfo.showEverytime = appearsEverytime.Checked;
+            mission.missionInfo.title = infoTitle.Text;
         }
         public void SetInfoToSelected()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.challengeInfo == null) return;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.missionInfo == null) return;
             infoUpdating = true;
-            appearsEverytime.Checked = challenge.challengeInfo.showEverytime;
-            infoTitle.Text = challenge.challengeInfo.title;
+            appearsEverytime.Checked = mission.missionInfo.showEverytime;
+            infoTitle.Text = mission.missionInfo.title;
             infoUpdating = false;
         }
 
@@ -803,22 +804,22 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateSegmentInfo()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.challengeInfo == null) return;
-            if (challenge.challengeInfo.segments.Count() == 0 || curSegmentIndex >= challenge.challengeInfo.segments.Count()) return;
-            InfoSegment segment = challenge.challengeInfo.segments[curSegmentIndex];
-            segment.hasSeperator = hasSeperator.Checked;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.missionInfo == null) return;
+            if (mission.missionInfo.segments.Count() == 0 || curSegmentIndex >= mission.missionInfo.segments.Count()) return;
+            InfoSegment segment = mission.missionInfo.segments[curSegmentIndex];
+            segment.hasSeparator = hasSeperator.Checked;
             segment.imageName = infoImageName.Text;
             segment.text = infoText.Text;
         }
         public void SetSegmentToSelected()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
-            if (challenge.challengeInfo == null) return;
-            if (challenge.challengeInfo.segments.Count() == 0 || curSegmentIndex >= challenge.challengeInfo.segments.Count()) return;
+            Mission mission = campaign.missions[currentMission];
+            if (mission.missionInfo == null) return;
+            if (mission.missionInfo.segments.Count() == 0 || curSegmentIndex >= mission.missionInfo.segments.Count()) return;
             segmentUpdating = true;
-            InfoSegment segment = challenge.challengeInfo.segments[curSegmentIndex];
-            hasSeperator.Checked = segment.hasSeperator;
+            InfoSegment segment = mission.missionInfo.segments[curSegmentIndex];
+            hasSeperator.Checked = segment.hasSeparator;
             infoImageName.Text = segment.imageName;
             infoText.Text = segment.text;
             segmentUpdating = false;
@@ -831,16 +832,16 @@ namespace BeatSaberCampaignCreator
         }
         public void UpdateInfoToggleState()
         {
-            Challenge challenge = campaign.challenges[currentChallenge];
+            Mission mission = campaign.missions[currentMission];
 
-            bool isEnabled = challenge.challengeInfo != null;
+            bool isEnabled = mission.missionInfo != null;
             infoTitle.Enabled = isEnabled;
             appearsEverytime.Enabled = isEnabled;
             segments.Enabled = isEnabled;
             addSegment.Enabled = isEnabled;
             removeSegment.Enabled = isEnabled;
 
-            isEnabled = !(challenge.challengeInfo == null || challenge.challengeInfo.segments.Count() == 0 || curSegmentIndex >= challenge.challengeInfo.segments.Count());
+            isEnabled = !(mission.missionInfo == null || mission.missionInfo.segments.Count() == 0 || curSegmentIndex >= mission.missionInfo.segments.Count());
             hasSeperator.Enabled = isEnabled;
             infoImageName.Enabled = isEnabled;
             infoText.Enabled = isEnabled;

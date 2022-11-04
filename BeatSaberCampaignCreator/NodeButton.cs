@@ -1,4 +1,4 @@
-﻿using BeatSaberCustomCampaigns.campaign;
+﻿using CustomCampaigns.Campaign;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -11,10 +11,10 @@ namespace BeatSaberCampaignCreator
 {
     public class NodeButton : Button
     {
-        public CampainMapPosition mapPosition;
+        public CampaignMapPosition mapPosition;
         public List<NodeButton> children;
         public NodeButton() : base() {
-            mapPosition = new CampainMapPosition();
+            mapPosition = new CampaignMapPosition();
             children = new List<NodeButton>();
             Size = new Size(40,20);
         }
